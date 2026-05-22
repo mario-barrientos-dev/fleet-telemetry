@@ -45,6 +45,8 @@ class AnomalyDetector(Protocol):
         self,
         current: TelemetryEvent,
         previous: TelemetryEvent | None,
+        *,
+        source_event_id: UUID | None = None,
     ) -> list[Anomaly]: ...
 
 
