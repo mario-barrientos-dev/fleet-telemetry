@@ -24,10 +24,6 @@ For a single-client dashboard, WebSockets adds server-side fan-out, reconnection
 - **Anomaly definition** was left open. I implemented 6 deterministic rules (`low_battery` edge-trigger, `battery_anomaly`, `stuck`, `overspeed`, `status_inconsistency`, `fault_with_errors`) with published thresholds. *No ML today* — there is no historical data, and a rule-based real-time approach is defensible and testable. The detector sits behind a `Protocol`, so a statistical detector can replace it without touching the use case — see §3.
 - **No auth was requested**, so the API is open in the demo with CORS restricted to the frontend origin.
 
-### Prior-experience disclosure
-
-I own and operate a small side venture (**relaai**) — an industrial-IoT platform with overlapping concepts (machine events, edge gateways, anomaly detection, escalation rules, failure / maintenance records). Domain familiarity informed *pacing*, not *content*: I did not open or copy from that codebase during the exercise, and the take-home design diverges where it matters (rule-based deterministic anomalies here vs. a training-based detector in relaai; vertical-slice hexagonal monolith here vs. multi-module legacy structure there). Calling this out so reviewers can ask sharper follow-up questions.
-
 ## 3. What would change at significant scale
 
 I define **"significantly"** as ≥10 000 vehicles at 1 Hz (~10 000 writes/s) or sub-100 ms event-to-dashboard latency.
@@ -38,7 +34,7 @@ I define **"significantly"** as ≥10 000 vehicles at 1 Hz (~10 000 writes/s) or
 - **Anomaly detection — explicit evolution path**:
   1. **Today (0 days of data)**: deterministic rules with published thresholds.
   2. **After ~7–30 days of capture**: baseline per vehicle on a rolling window (z-score on battery drain rate, speed distribution, zone dwell-time). The hard rules become a safety floor; the statistical layer sits on top.
-  3. **At scale**: tunable sensitivity, configurable detection window, historical backfill for onboarding new fleets, and a feedback loop (`confirmed / false_positive / resolved`) that tightens or relaxes thresholds. This is the pattern I run in production in **relaai** (see §2 disclosure) — the take-home detector is intentionally simpler and lives behind a `Protocol` so the swap is local.
+  3. **At scale**: tunable sensitivity, configurable detection window, historical backfill for onboarding new fleets, and a feedback loop (`confirmed / false_positive / resolved`) that tightens or relaxes thresholds. The take-home detector is intentionally simpler and lives behind a `Protocol` so the swap is local.
 - **Fleet aggregate**: `vehicles_current` stays as a snapshot table; under heavy write load, swap to a streaming projection.
 - **Frontend**: polling → SSE or WebSockets when multiple operators watch simultaneously; CDN-served static bundle.
 

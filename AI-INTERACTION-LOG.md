@@ -4,10 +4,6 @@
 
 **AI-assisted time**: ~3.5 h of 5.5 h budgeted (~64%). The remainder was reading the spec, designing the schema and concurrency strategy on paper, writing the ADR, and hand-rolling the parts I did not want to delegate.
 
-## Prior-experience disclosure
-
-I own and operate a small side venture called **relaai** — an industrial-IoT platform with overlapping concepts (machine events, edge gateways, anomaly detection, escalation rules, failure / maintenance records). I did **not** open or copy from that codebase during this exercise. Domain familiarity informed how I paced the work and which patterns I trusted quickly; the implementation here was written from scratch and intentionally diverges where the take-home's constraints differ (rule-based deterministic anomalies here vs. a training-based detector in relaai; vertical-slice hexagonal monolith here vs. multi-module legacy structure there).
-
 ---
 
 ## Entries
@@ -120,17 +116,7 @@ I own and operate a small side venture called **relaai** — an industrial-IoT p
 
 ---
 
-### Entry 08 — Disclosure paragraph + ADR §3 evolution path `[docs]`
-
-**Goal**: Decide *whether* and *how* to mention relaai in the public README/ADR.
-
-**Discussion**: I have prior production experience in the same domain. Hiding it would feel dishonest if it came up later; over-mentioning would feel defensive. I drafted a single paragraph that (a) discloses, (b) confirms no code reuse, (c) demonstrates intentional divergence (rule-based here vs ML-based there), and (d) ties cleanly into the §3 scale path (where the rules give way to a learning detector — *the* pattern I run in relaai).
-
-**Accepted**: the disclosure paragraph in both `ADR.md` §2 and `AI-INTERACTION-LOG.md` (top). The §3 evolution path explicitly references relaai as the proven endpoint of the path.
-
----
-
-### Entry 09 — Type-checking the use cases against `mypy --strict` `[refactor]`
+### Entry 08 — Type-checking the use cases against `mypy --strict` `[refactor]`
 
 **Goal**: Get a clean strict pass on 37 source files including the new use cases.
 
