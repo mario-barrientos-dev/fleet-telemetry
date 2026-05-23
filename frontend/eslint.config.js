@@ -6,7 +6,18 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "src/shared/api/generated.ts", "node_modules"] },
+  {
+    ignores: [
+      "dist",
+      "node_modules",
+      "src/shared/api/generated.ts",
+      "vite.config.ts",
+      "vitest.config.ts",
+      "vitest.setup.ts",
+      "tailwind.config.ts",
+      "postcss.config.js",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     files: ["**/*.{ts,tsx}"],
