@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: fleet
       POSTGRES_PASSWORD: fleet
     ports:
-      - "5432:5432"
+      - "55432:5432"  # host:container — uncommon host port to avoid clashes
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fleet -d fleet"]
       interval: 2s
@@ -23,7 +23,7 @@ services:
       APP_DATABASE_URL: postgresql+asyncpg://fleet:fleet@db:5432/fleet
       APP_LOG_LEVEL: INFO
       APP_ENVIRONMENT: dev
-      APP_CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      APP_CORS_ORIGINS: http://localhost:5173,http://localhost:18080
     ports:
       - "8000:8000"
     depends_on:
@@ -42,7 +42,7 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:8000
     ports:
-      - "8080:80"
+      - "18080:80"  # host:container — 18080 to avoid clashes
     depends_on:
       api:
         condition: service_healthy

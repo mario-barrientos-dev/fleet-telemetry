@@ -4,42 +4,61 @@ A vertical slice of a fleet monitoring system for 50 autonomous industrial vehic
 
 ## What's in here
 
-- **Backend**: FastAPI (async) + SQLAlchemy 2.x (async) + Postgres 16, hexagonal layout.
+- **Backend**: FastAPI (async) + SQLAlchemy 2.x (async) + Postgres 16, hexagonal layout, managed with **conda**.
 - **Frontend**: React + TypeScript + Vite, Redux Toolkit + RTK Query, Tailwind. Polling at 1.5 s.
 - **Concurrency primitives**: append-only `zone_entries` (no lost updates by construction); `SERIALIZABLE` + retry for fault transitions; partial unique index enforcing "≤1 active mission per vehicle".
 - **Anomaly detection**: 6 deterministic rules behind a `Protocol` (designed to evolve into a learning detector — see `ADR.md`).
 
 Full design rationale in [`ADR.md`](./ADR.md). AI usage in [`AI-INTERACTION-LOG.md`](./AI-INTERACTION-LOG.md).
 
-## Run it
-
-The fastest path:
+## Run it (Docker — fastest path)
 
 ```bash
 docker compose up --build
 ```
 
-When the API is healthy:
+Wait for the API healthcheck to pass, then in another terminal:
 
 ```bash
-# (one shot, in another terminal)
-docker compose exec api uv run alembic upgrade head
-docker compose exec api uv run python -m scripts.seed
+docker compose exec api alembic upgrade head
+docker compose exec api python -m scripts.seed
 ```
 
-Then open:
+Open:
 
-- Dashboard:   http://localhost:8080
+- Dashboard:   http://localhost:18080
 - API docs:    http://localhost:8000/docs
 - Health:      http://localhost:8000/health
 
-### Run without Docker
+Postgres is exposed on host port **55432** (not 5432) to avoid clashing with a Postgres you may already have running locally.
+
+## Run it (without Docker — conda + pnpm)
+
+Postgres on `localhost:55432` (or wherever you set `APP_DATABASE_URL`) is required.
 
 ```bash
-# Postgres on localhost:5432 (db=fleet, user=fleet, password=fleet) required
-cd backend && uv sync && uv run alembic upgrade head && uv run python -m scripts.seed
-uv run uvicorn app.main:app --port 8000 &
-cd ../frontend && pnpm install && pnpm dev
+# Backend
+cd backend
+conda env create -f environment.yml         # one-time
+conda activate fleet-telemetry
+alembic upgrade head
+python -m scripts.seed
+uvicorn app.main:app --port 8000
+
+# Frontend (new terminal)
+cd frontend
+pnpm install
+pnpm dev
+```
+
+The Makefile wraps these:
+
+```bash
+make backend-env             # conda env create
+make backend-migrate         # alembic upgrade head
+make backend-seed
+make backend-run             # uvicorn
+make frontend-install && make frontend-run
 ```
 
 ## Send a telemetry event
@@ -60,15 +79,18 @@ curl -X POST http://localhost:8000/api/v1/telemetry \
 ## Tests
 
 ```bash
-make backend-test     # unit + integration (Testcontainers boots a real Postgres)
-make frontend-test    # vitest + MSW
-make ci               # everything: lint + typecheck + test on both sides
+make backend-test       # unit + integration (Testcontainers boots a real Postgres)
+make backend-test-fast  # unit only
+make frontend-test
+make ci                 # everything: lint + typecheck + test on both sides
 ```
 
 Concurrency tests live in `backend/tests/integration/`:
 
 - `test_zone_counter_concurrency.py` — 50 concurrent same-zone events ⇒ count exactly 50.
-- `test_fault_transition_concurrency.py` — 2 concurrent fault triggers ⇒ exactly 1 maintenance record and 1 cancelled mission.
+- `test_fault_transition_concurrency.py` — concurrent fault triggers ⇒ exactly 1 maintenance per `source_event_id`, exactly 1 cancelled mission overall.
+
+Local results at time of writing: **26 unit + 7 integration tests passing**; mypy `--strict` clean across 37 source files.
 
 ## Endpoints (summary)
 

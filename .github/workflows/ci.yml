@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
+        shell: bash -l {0}
         working-directory: backend
     services:
       postgres:
@@ -27,16 +28,17 @@ jobs:
       APP_ENVIRONMENT: test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - name: Install uv
-        run: pip install uv==0.5.4
-      - run: uv sync
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy app
-      - run: uv run alembic upgrade head
-      - run: uv run pytest -q
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: fleet-telemetry
+          environment-file: backend/environment.yml
+          auto-activate-base: false
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy app
+      - run: alembic upgrade head
+      - run: pytest -q
 
   frontend:
     runs-on: ubuntu-latest
@@ -55,5 +57,5 @@ jobs:
       - run: pnpm install --frozen-lockfile || pnpm install
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test --run
+      - run: pnpm test
       - run: pnpm build

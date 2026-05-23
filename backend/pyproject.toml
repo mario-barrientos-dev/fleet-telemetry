@@ -3,32 +3,8 @@ name = "fleet-telemetry-api"
 version = "0.1.0"
 description = "Fleet telemetry monitoring service — Qualitara take-home."
 requires-python = ">=3.12"
-dependencies = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
-    "sqlalchemy[asyncio]>=2.0.36",
-    "asyncpg>=0.30",
-    "alembic>=1.14",
-    "pydantic>=2.10",
-    "pydantic-settings>=2.6",
-    "structlog>=24.4",
-    "orjson>=3.10",
-    "uuid-utils>=0.10",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3",
-    "pytest-asyncio>=0.24",
-    "httpx>=0.27",
-    "testcontainers[postgres]>=4.8",
-    "hypothesis>=6.118",
-    "ruff>=0.8",
-    "mypy>=1.13",
-]
-
-[tool.uv]
-package = false
+# Runtime + dev dependencies are managed via conda (see environment.yml).
+# pyproject.toml keeps tool configuration only.
 
 [tool.ruff]
 line-length = 100

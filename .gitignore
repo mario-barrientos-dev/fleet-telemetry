@@ -14,6 +14,9 @@ htmlcov/
 dist/
 build/
 
+# uv (deprecated in favor of conda)
+uv.lock
+
 # Node
 node_modules/
 .pnpm-store/
